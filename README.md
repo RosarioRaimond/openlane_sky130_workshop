@@ -641,8 +641,273 @@ The placement of I/O pins depends on the design requirements. In this case all t
   </tr>
 </table>
 
-The  area where the pins are placed has to be blocked for the automated place and route tool hence a logical cell placement blockage is inserted in this area.
+The area where the pins are placed has to be blocked for the automated place and route tool hence a logical cell placement blockage is inserted in this area.
 
+**Lab2**  
+In the below directory, there are config.tcl files for each step. This is like the default setting that will be used if any configuration is not specified for any particular step.
+
+```bash
+cd ~/Desktop/work/tools/openlane_working_dir/openlane/configurations
+```
+
+The README file in this directory gives a brief description of the different types of options/switches available like FP_CORE_UTIL(sets the core utilization, 50% by default).  
+Order of precedence for the configuration is  
+configurations/&lt;step&gt;.tcl -> config.tcl(inside the design dir) -> &lt;sky130&gt;config.tcl  
+
+```bash
+#command to run floorplan
+run_floorplan
+```
+  <table align="center">
+  <tr>
+    <td align="center">
+     <img width="1920" height="935" alt="vsd7" src="https://github.com/user-attachments/assets/2c893d0f-bc5c-474a-8739-967d6d357c84" />
+    </td>
+    <td align="center">
+    <img width="1920" height="935" alt="vsd8" src="https://github.com/user-attachments/assets/7d52a46f-6c0d-411a-b032-1a284e2a8ff4" />
+    </td>
+  </tr>
+</table>
+
+  <p align="center">
+   <img width="1920" height="935" alt="vsd9" src="https://github.com/user-attachments/assets/638eb22d-176d-43b1-887a-8b7184b72dec" />
+  </p>
+
+  ```math
+1000\ Unit\ Distance = 1\ Micron
+```
+```math
+Die\ width\ in\ unit\ distance = 660685 - 0 = 660685
+```
+```math
+Die\ height\ in\ unit\ distance = 671405 - 0 = 671405
+```
+```math
+Distance\ in\ microns = \frac{Value\ in\ Unit\ Distance}{1000}
+```
+```math
+Die\ width\ in\ microns = \frac{660685}{1000} = 660.685\ Microns
+```
+```math
+Die\ height\ in\ microns = \frac{671405}{1000} = 671.405\ Microns
+```
+```math
+Area\ of\ die\ in\ microns = 660.685 * 671.405 = 443587.212425\ Square\ Microns
+```
+
+  
+  ```bash
+  # Change directory to path containing generated floorplan def
+  cd Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/runs/17-03_12-06/results/floorplan/
+  
+  # Command to load the floorplan def in magic tool
+  magic -T /home/vsduser/Desktop/work/tools/openlane_working_dir/pdks/sky130A/libs.tech/magic/sky130A.tech lef read ../../tmp/merged.lef def read picorv32a.floorplan.def &
+  ```
+
+ <table align="center">
+  <tr>
+    <td align="center">
+     <img width="1920" height="935" alt="vsd10" src="https://github.com/user-attachments/assets/f7621886-891f-4ce6-af12-12dcb359f832" />
+    </td>
+    <td align="center">
+     <img width="1920" height="935" alt="vsd11" src="https://github.com/user-attachments/assets/e905243c-5783-407b-bd84-5e871d7731d0" />
+    </td>
+  </tr>
+</table>
+
+ **Library Binding and Placement**  
+ 1)	Bind netlist with physical cells
+ 2)	Placement
+ 3)	Optimize Placement
+    
+***Bind netlist with physical cells:*** 
+The cells in the netlist are given physical dimensions. For example, the logic gates are represented by different symbols in a circuit but for practical cases they are of particular width and height in the shape of rectangle or square. 
+A library has the timing, physical information of each of the cells that is used in the circuit. Each cell has a different variation, for example, the library contains AND gate with different sizes which has different delay and drive strength. Based on the timing and area constraints the appropriate cell is picked.
+
+***Placement:***  
+The physical mapped cells have to be placed onto the floorplan. The preplaced are cells are not moved, and that area is not available for the placement of the standard cells.
+
+<p align="center">
+ <img width="829" height="414" alt="image" src="https://github.com/user-attachments/assets/4c3c0805-7cff-4c64-b34b-fd141cf9c30c" />
+ </p>
+ 
+***Optimize Placement:***  
+This is the stage where we estimate the wire length and capacitance and, based on that, insert repeaters. 
+Eg. FF1(yellow) to Din2 length is more and resistance is more which causes the signal to degrade (Signal integrity). To solve this problem, we use the buffers, but it leads to an increase in area.
+Slew is dependent on the capacitance, higher the capacitance, higher the slew.
+After the optimize placement step is done we get,
+ <p align="center">
+  <img width="793" height="385" alt="image" src="https://github.com/user-attachments/assets/fb63a53e-b722-4a27-91c2-cc5bb8fbf0ae" />
+ </p>
+
+  **Need for Characterization**  
+In all the steps of an IC design flow
+Logic synthesis -> Floorplanning -> Placement -> CTS -> Routing -> Static Timing Analysis
+In all these steps are gates or cells. Different stages need different kind of information of these cells, which is stored in a library obtained by a process called charaterization.
+
+**LAB 3**
+Placement in OpenLANE occurs in 2 steps global placement and detailed placement. First step is global placement, goal of which is to reduce the wire length and the concept of Half Parameter Wire Length is used.
+
+```bash
+#command to run placement
+run_placement
+```
+ <table align="center">
+  <tr>
+    <td align="center">
+     <img width="1920" height="935" alt="vsd12" src="https://github.com/user-attachments/assets/9a67fc12-4299-4ff7-81f5-085416f7e742" />
+    </td>
+    <td align="center">
+     <img width="1920" height="935" alt="vsd13" src="https://github.com/user-attachments/assets/d623236e-1e25-427d-a2f3-eb7973b00318" />
+    </td>
+  </tr>
+    <tr>
+    <td align="center">
+     <img width="1920" height="935" alt="vsd14" src="https://github.com/user-attachments/assets/3a37f4bd-302a-4a78-9358-4ebbd3f7471a" />
+    </td>
+  </tr>
+</table>
+
+  ```bash
+  # Change directory to path containing generated placement def
+  cd Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/runs/17-03_12-06/results/placement/
+  
+  # Command to load the placement def in magic tool
+  magic -T /home/vsduser/Desktop/work/tools/openlane_working_dir/pdks/sky130A/libs.tech/magic/sky130A.tech lef read ../../tmp/merged.lef def read picorv32a.placement.def &
+  ```
+<p align="center">
+<img width="1920" height="935" alt="vsd15" src="https://github.com/user-attachments/assets/e7ee8a15-2844-4fe4-bf3f-fbf561b08898" />
+ </p>
+
+The PDN gets generated during floorplan, but in openlane the floorplan does not generate PDN. PDN is generated post floorplan and post CTS. Before routing.
+
+  **Cell design and characterization flows**
+  
+  ***Standard cells :*** These are the basic logic elements that are present in the library. The library contains logic elements with different functionality, sizes and threshold voltages.  
+  <table align="center">
+   <tr>
+    <td align="center">
+     <img width="1782" height="1005" alt="image" src="https://github.com/user-attachments/assets/b86c4a13-fa09-4ef6-875f-0c043dd3d0cf" />
+    </td>
+    <td align="center">
+     <img width="1800" height="1049" alt="image" src="https://github.com/user-attachments/assets/040f56e1-af2e-48c4-b1ac-7e7d31b7e1c0" />
+    </td>
+   </tr>
+  </table>
+  
+***Cell Design Flow***
+1)	Inputs  
+  a.	 Process design kits(PDKs): DRC & LVS rules, SPICE models, library & user-defined specs.
+  <table align="center">
+   <tr>
+    <td align="center">
+     <img width="386" height="335" alt="image" src="https://github.com/user-attachments/assets/53882a6b-5251-425f-ac9f-6785b5902063" />
+    </td>
+    <td align="center">
+     <img width="479" height="315" alt="image" src="https://github.com/user-attachments/assets/544bcbc2-0340-4c60-8a07-bbeb0c7bae01" />
+    </td>
+   </tr>
+  </table>
+  
+DRC – these are the rules provided by the foundry, that should be followed for the design to function as required. These rules describe the dimensions of the width and length between different layers and of the same layer.  
+
+SPICE models – These are the values of resistance, capacitance that are used in the modelling equation for the circuit elements that are used during the simulation. The threshold voltage, capacitance values are given in the library.  
+
+User defined specs – the distance between the power and ground rail decides the cell-height. The width of the cell is decided by the drive strength. Supply voltage.  Metal layer specification. Pin locations. Drawn gate length.  
+
+2)	Design Steps  
+  a.	Circuit design – implement the function. w/l ratio. Get the pmos and nmos network graph.
+
+<p align="center">
+ <img width="428" height="414" alt="image" src="https://github.com/user-attachments/assets/d8276c21-8a88-4f9a-9d55-5932b9a60389" />
+</p>
+
+  b.	Layout design  
+  
+ <table align="center">
+  <tr>
+    <td align="center">
+     <img width="422" height="262" alt="image" src="https://github.com/user-attachments/assets/b7c9d7b5-213e-495b-982b-bdfdb2ceb098" />
+    </td>
+    <td align="center">
+     <img width="514" height="262" alt="image" src="https://github.com/user-attachments/assets/70e91fc9-d5b2-45ba-8526-db14ea9cd9ba" />
+    </td>
+  </tr>
+    <tr>
+    <td align="center">
+     <img width="292" height="334" alt="image" src="https://github.com/user-attachments/assets/281e3da3-99c9-4d47-9486-bb7f01aa8fa2" />
+    </td>
+    <td align="center">
+     <img width="514" height="973" alt="image" src="https://github.com/user-attachments/assets/c0882446-d427-4503-8656-17b8f845a116" />
+    </td>
+  </tr>
+</table>
+
+  c.	Characterization – Extract the parasitics in the circuit layout. It is the process by which the timing, noise, power, .libs , function.
+
+3)	Outputs – CDL(circuit description language), GDSII, LEF, extracted spice netlist(.cir).  
+Characterization flow : From the above steps we have the layout, description, spice extracted netlist.  
+8 steps(software used GUNA):  
+  a.	Read in the models(model file).  
+  b.	Read the extracted spice netlist.  
+  c.	Define/ recognize the behavior of the model.  
+  d.	Read the subcircuits of the inverter.  
+  e.	Attach the necessary power sources.  
+  f.	Apply the stimulus(characterization setup).  
+  g.	Provide the necessary output capacitances.  
+  h.	Provide necessary spice simulation commands. (.tran or .dc).  
+
+Characterization software GUNA :  
+  a. Timing characterization.  
+  b. Power characterization.  
+  c. Noise characterization.  
+
+  **General timing characterization parameters**
+Timing characterization  
+
+ <table align="center">
+  <tr>
+    <td align="center">
+     <img width="480" height="261" alt="image" src="https://github.com/user-attachments/assets/d8879be0-4398-4223-8417-6659ebce2762" />
+    </td>
+    <td align="center">
+     <img width="464" height="247" alt="image" src="https://github.com/user-attachments/assets/dbbf8adc-b265-4f72-84f5-a1e5c1adbc54" />
+    </td>
+  </tr>
+    <tr>
+    <td align="center">
+     <img width="287" height="304" alt="image" src="https://github.com/user-attachments/assets/df96bd1e-8720-4218-baf3-a37f9788101a" />
+    </td>
+    <td align="center">
+     <img width="286" height="301" alt="image" src="https://github.com/user-attachments/assets/b029a26a-9cec-4472-993d-5ea3a4100b72" />
+    </td>
+  </tr>
+</table>
+
+20% of vdd/vss is the high/low slew threshold.
+Transition time
+```math
+Rise transition = time(slew\_high\_rise\_thr)-time(slew\_low\_rise\_thr)  for rising. 
+```
+```math
+Fall transition = time(slew\_low\_fall\_thr)-time(slew\_high\_fall\_thr)  for falling. 
+```
+<p align="center">
+ <img width="1749" height="840" alt="image" src="https://github.com/user-attachments/assets/fa16d4ba-15e3-478a-8b40-68cd8745d673" />
+</p>
+
+Propagation delay - 50% of vdd is the in/out threshold for propagation delay
+
+```math
+Rise delay = time(out\_rise\_thr)-time(in\_rise\_thr)  for rising. 
+```
+```math
+Fall delay = time(out\_fall\_thr)-time(in\_fall\_thr)  for falling. 
+```
+
+<p align="center">
+ <img width="1751" height="967" alt="image" src="https://github.com/user-attachments/assets/bab627ab-b1e1-4685-a3ff-50a7b428ff12" />
+ </p>
 </details>
 
 ## Day 3 - Design library cell using Magic Layout and ngspice characterization
