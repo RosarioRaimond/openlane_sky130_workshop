@@ -912,7 +912,217 @@ Fall delay = time(out\_fall\_thr)-time(in\_fall\_thr)  for falling.
 
 ## Day 3 - Design library cell using Magic Layout and ngspice characterization
 <details>
- <summary><b>Chip Floor planning considerations</b></summary>
+ <summary><b>Labs for CMOS inverter ngspice simulations</b></summary>
+ 
+PnR is an iterative flow and the parameters can be changed on the fly in OpenLANE flow. For example the IO placement can be changed.  
+
+ 
+```bash
+# cd into the openlane directory
+cd Desktop/work/tools/openlane_working_dir/openlane
+
+# Run the docker command to invoke the OpenLANE Docker container
+docker
+
+# Launch the OpenLANE flow in interactive mode(-interactive switch is used to view the intermediate results)
+./flow.tcl -interactive
+
+# Import the required package
+package require openlane 0.9
+
+# To prep the design use the following command
+prep -design picorv32a
+
+# Run synthesis for the prepared design
+run_synthesis
+
+# Perform floorplanning with mode 1 (default value)
+run_floorplan
+```
+<table align="center">
+  <tr>
+    <td align="center">
+   <img width="1920" height="935" alt="vsd18_mode1_full" src="https://github.com/user-attachments/assets/4982662a-616a-4cc9-8224-2f88f67e80cc" />
+ </td>
+    <td align="center">
+  <img width="1920" height="935" alt="vsd18_mode1" src="https://github.com/user-attachments/assets/cdd7520f-4d61-416d-b3b5-132ff7c43b42" />
+  </td>
+  </tr>
+</table>
+
+
+```bash
+# Rerun floorplanning with mode 2
+run_floorplan
+```
+
+
+<table align="center">
+ <tr>
+  <td align="center">
+   <img width="1920" height="935" alt="vsd18_mode2_full" src="https://github.com/user-attachments/assets/b14d3409-da0c-4b8f-8af4-773d465ac4d8" />
+  </td>
+  <td align="center">
+   <img width="1920" height="935" alt="vsd18_mode2" src="https://github.com/user-attachments/assets/7e2b03ea-29f2-422f-b7ed-229f7d49d950" />
+  </td>
+ </tr>
+</table>
+
+ We will not be building the cell from scratch.  
+ Clone the magic file of the cell from github.  
+ Postlayout simulation using ngspice.  
+ After characterization of the cell.  
+ Plug this cell into the openlane flow and check if it works.  
+
+**VTC – SPICE simulations**  
+Spice deck creation for CMOS inverter.  It is the connectivity information, inputs that has to be provided to the simulation, tap points at which we will take the output.  
+  i)	component connectivity.  
+  ii)	Component values.  
+  iii)	Identify nodes.  
+  iv)	Name nodes.  
+
+ <table align="center">
+  <tr>
+   <td align="center">
+    <img width="259" height="294" alt="image" src="https://github.com/user-attachments/assets/bb3c3506-d5f2-4a65-a8ab-fd4b1540577f" />
+   </td>
+   <td align="center">
+    <img width="388" height="294" alt="image" src="https://github.com/user-attachments/assets/fa9fa296-38b2-40fa-8bc9-95fbc0fca488" />
+   </td>
+  </tr>
+ </table>
+
+Assume the width and channel length to be same for both PMOS and NMOS   
+Wp=Wn=0.375u  
+Lp-Ln=0.25u  
+Vdd to be 2.5V  
+
+Identify the nodes and name them. For eg., Transistor M1 can be defined between 3 nodes.
+It is described as  
+<instance_name> drain gate source substrate <pmos/nmos> W=<> L=<>  
+M1 out in vdd vdd pmos W=0.375u L=0.25u  
+
+ <table align="center">
+  <tr>
+   <td align="center">
+  <img width="487" height="353" alt="image" src="https://github.com/user-attachments/assets/b9e833ac-6054-4eea-91a9-922e65a24922" />
+   </td>
+   <td align="center">
+    <img width="537" height="491" alt="image" src="https://github.com/user-attachments/assets/904adb3f-8021-4181-93c8-6c287514c4bf" />
+   </td>
+  </tr>
+ </table>  
+
+
+SPICE waveform: Wn =Wp=0.375u,  Ln,p=0.25u device (Wn/Ln=Wp/Lp=1.5).   
+Ideally we expect the W/L ratio of pmos to be slightly greater than that of nmos.   
+**STEPS:**
+```bash
+#cd into the directory with the circuit  
+cd <PATH>  
+#Source the model file(model file contains all the technological parameters, eg. Threshold voltage, oxide thickness)  
+source <filename.cir>  
+run  
+setplot  
+dc1  
+display  
+#get the waveform  
+plot out vs in  
+```
+ <table align="center">
+  <tr>
+   <td align="center">
+    <img width="1293" height="752" alt="image" src="https://github.com/user-attachments/assets/76bffba0-8a7c-4c73-a231-169db711deac" />
+   </td>
+   <td align="center">
+    <img width="1294" height="746" alt="image" src="https://github.com/user-attachments/assets/73f485fa-cf63-4d72-a0df-189527df2e21" />
+   </td>
+  </tr>
+ </table>
+
+ <table align="center">
+  <tr>
+   <td align="center">
+    <img width="1161" height="460" alt="image" src="https://github.com/user-attachments/assets/34a5ae97-03a5-4d2e-bc2e-22d34d3ae193" />
+   </td>
+   <td align="center">
+    <img width="1162" height="461" alt="image" src="https://github.com/user-attachments/assets/0f54b67e-defe-4b1e-b653-e1e780026ee6" />
+   </td>
+  </tr>
+  <tr>
+   <td align="center">
+    <img width="1165" height="459" alt="image" src="https://github.com/user-attachments/assets/a76431d0-099f-49dd-8c93-49be583533fb" />
+   </td>
+   <td align="center">
+    <img width="1163" height="460" alt="image" src="https://github.com/user-attachments/assets/6ec948ad-fc25-4764-8a52-a891f503c649" />
+   </td>
+  </tr>
+  <tr>
+   <td align="center">
+    <img width="1161" height="468" alt="image" src="https://github.com/user-attachments/assets/f5dc6ecd-5aff-4064-965f-8c2db9305267" />
+   </td>
+   <td align="center">
+    <img width="1162" height="463" alt="image" src="https://github.com/user-attachments/assets/cc1c9c6a-fd45-4ac2-815a-ffa3cb59ddde" />
+   </td>
+  </tr>
+ </table>
+
+<p align="center">
+ <img width="750" height="942" alt="image" src="https://github.com/user-attachments/assets/f79051c7-840c-42d5-90a3-9589e5ff6dc9" />
+</p>
+
+Change the width of the PMOS to 2.5 times the width of NMOS and re-run the simulation.  
+SPICE waveform: Wn = 0.375u,  Wp=0.9375u, Ln,p=0.25u device (Wn/Ln=1.5, Wp/Lp=3.75)  
+
+<p align="center">
+ <img width="750" height="941" alt="image" src="https://github.com/user-attachments/assets/84df7ab0-6e38-434c-af50-6be1abda619f" />
+</p>
+
+<table align="center">
+  <tr>
+    <td colspan="2" align="center">
+      <img
+        width="766"
+        height="380"
+        alt="image"
+        src="https://github.com/user-attachments/assets/fa833476-483c-4da0-8751-6cbe571d26d6"
+      />
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      ~0.98V
+    </td>
+    <td align="center">
+      ~1.2V
+    </td>
+  </tr>
+</table>
+                                                                                                              
+                     
+Static behavior Evaluation : CMOS inverter Robustness   
+1. Switching Threshold, Vm - Vm is the point where Vin = Vout(Point where both pmos and nmos are ON).  
+2.   
+```bash
+ # Change directory to openlane
+cd Desktop/work/tools/openlane_working_dir/openlane
+
+# Clone the repository with custom inverter design
+git clone https://github.com/nickson-jose/vsdstdcelldesign
+
+# Change into repository directory
+cd vsdstdcelldesign
+
+# Copy magic tech file to the repo directory for easy access
+cp /home/vsduser/Desktop/work/tools/openlane_working_dir/pdks/sky130A/libs.tech/magic/sky130A.tech .
+
+# Check contents whether everything is present
+ls
+
+# Command to open custom inverter layout in magic
+magic -T sky130A.tech sky130_inv.mag &
+```
+
 </details>
 
 ## Day 4 - Pre-Layout timing analysis and importance and good clock tree
