@@ -999,7 +999,7 @@ Vdd to be 2.5V
 
 Identify the nodes and name them. For eg., Transistor M1 can be defined between 3 nodes.
 It is described as  
-<instance_name> drain gate source substrate <pmos/nmos> W=<> L=<>  
+<instance_name> <drain> <gate> <source> <substrate> <pmos/nmos> W=<> L=<>  
 M1 out in vdd vdd pmos W=0.375u L=0.25u  
 
  <table align="center">
@@ -1101,8 +1101,40 @@ SPICE waveform: Wn = 0.375u,  Wp=0.9375u, Ln,p=0.25u device (Wn/Ln=1.5, Wp/Lp=3.
                                                                                                               
                      
 Static behavior Evaluation : CMOS inverter Robustness   
-1. Switching Threshold, Vm - Vm is the point where Vin = Vout(Point where both pmos and nmos are ON).  
-2.   
+From the waveform, the operation of CMOS inverter is clear. when the input is 0V(0) the output is 2.5V(1) and when the input is 2.5V(1) the output is 0V(0).  
+1. Switching Threshold, Vm - Vm is the point where Vin = Vout(Point where both pmos and nmos are ON).
+It can be found by drawing a line with a slope of 45 degree and the intersection of this line with the plot gives the Switching Threshold(Vm).  
+<p align="center">
+ <img width="766" height="950" alt="image" src="https://github.com/user-attachments/assets/ed914298-9076-4dbe-9bc7-730e64813e9b" />
+</p>
+The plot below shows the region of operation of both PMOS and NMOS transistor at different voltages. The swithching threshold is the point where both transistors are in saturation region and can be considered a short circuit from Vcc to Gnd.  
+<p align="center">
+ <img width="766" height="605" alt="image" src="https://github.com/user-attachments/assets/2fefaba8-3b94-427d-8fc8-5da44b374037" />
+</p>
+
+We can have a theoretical value calculated with the channel width and length by using the following equations.
+
+<p align="center">
+ <img width="1721" height="942" alt="image" src="https://github.com/user-attachments/assets/585b10a0-a4eb-4c2c-91fa-4a93c27a5082" />
+</p>
+
+
+Let's try to understand the effect of Wp/ Wn ratio on the switching threshold, by simulation. To perform a dynamic simulation, we can use the same spice deck and perform a transient analysis with a pulse as input instead of dc characteristics. The Wp/Lp is and integral multiple of Wn/Ln and we calculate the threshold.
+
+ <table align="center">
+  <tr>
+   <td align="center">
+    <img width="427" height="276" alt="image" src="https://github.com/user-attachments/assets/aa7e0b37-0208-437e-8df0-14bf723bf3e9" />
+   </td>
+   <td align="center">
+    <img width="436" height="295" alt="image" src="https://github.com/user-attachments/assets/83566639-c333-45ef-8ec6-8d0011fd6490" />
+   </td>
+  </tr>
+ </table>
+
+
+
+**Lab Steps to git clone the vsdstdcell design**
 ```bash
  # Change directory to openlane
 cd Desktop/work/tools/openlane_working_dir/openlane
@@ -1113,8 +1145,8 @@ git clone https://github.com/nickson-jose/vsdstdcelldesign
 # Change into repository directory
 cd vsdstdcelldesign
 
-# Copy magic tech file to the repo directory for easy access
-cp /home/vsduser/Desktop/work/tools/openlane_working_dir/pdks/sky130A/libs.tech/magic/sky130A.tech .
+# Copy magic tech file to the vsdstdcelldesign dir for easy access
+cp ../..//pdks/sky130A/libs.tech/magic/sky130A.tech .
 
 # Check contents whether everything is present
 ls
@@ -1122,8 +1154,620 @@ ls
 # Command to open custom inverter layout in magic
 magic -T sky130A.tech sky130_inv.mag &
 ```
+**Inception of Layout and CMOS fabrication process**  
+***16-mask CMOS process***
+1.	Selecting a substrate  
+  Most common substrate – p-type  
+  high resistivity(5~50ohms)  
+  doping level(10^15 cm^-3)  
+  orientation(100)  
+Substrate doping should be less than the well doping.  
+
+2.	Creating active region for transistors
+Active regions are the areas where transistors are made. It is done in the following steps:  
+  ~40nm of SiO2(Silicon dioxide)  - acts as insulator
+  ~80nm if Si3N4(silicon nitride) 
+  ~1um photoresist(Mask1)  
+
+ <table align="center">
+  <tr>
+   <td align="center">
+    <img width="1628" height="814" alt="image" src="https://github.com/user-attachments/assets/a00fbb49-a7b2-41a0-a006-a26054b7f358" />
+   </td>
+   <td align="center">
+    <img width="1594" height="781" alt="image" src="https://github.com/user-attachments/assets/57ab2581-bf70-4761-9d20-b1cbd76b7c0d" />
+   </td>
+  </tr>
+ </table>
+ 
+ The exposed region is washed out using  the developing solution.  
+
+ <table align="center">
+  <tr>
+   <td align="center">
+    <img width="1593" height="639" alt="image" src="https://github.com/user-attachments/assets/8c5f5a6d-7bf8-48d9-bfdf-cea65d44732e" />    
+   </td>
+   <td align="center">
+    <img width="1586" height="635" alt="image" src="https://github.com/user-attachments/assets/6a5c0211-b3fd-4528-aed6-a9a4ab4100f6" />
+   </td>
+  </tr>
+ </table>
+
+ The mask is removed. Resist(SiN4) is chemically removed. Placed in oxidation furnace.  
+
+ <table align="center">
+  <tr>
+   <td align="center">
+    <img width="1581" height="639" alt="image" src="https://github.com/user-attachments/assets/d0d82866-0c7f-4433-88d4-0c70a68c2b40" />    
+   </td>
+   <td align="center">
+    <img width="1590" height="635" alt="image" src="https://github.com/user-attachments/assets/87a102f6-71d3-41bb-bdc6-b142a1df7f31" />
+   </td>
+  </tr>
+ </table>
+
+ This process is called LOCOS- Local Oxidation of Silicon. Then the SiN4 is removed using phosphoric acid. The field oxide grown creates an isolation between the transistors.  
+ <table align="center">
+  <tr>
+   <td align="center">
+    <img width="1598" height="734" alt="image" src="https://github.com/user-attachments/assets/5ef88597-65bf-4743-8725-3643196055d5" />
+   </td>
+   <td align="center">
+    <img width="1592" height="667" alt="image" src="https://github.com/user-attachments/assets/fc9a3884-3cec-40fc-806d-ba05953b7d6b" />
+   </td>
+  </tr>
+ </table>
+
+3.	N-well and P-well formation
+ <table align="center">
+  <tr>
+   <td align="center">
+ <img width="1377" height="801" alt="image" src="https://github.com/user-attachments/assets/4e503f89-4a58-4faa-b620-0ae9aa5be668" />
+   </td>
+   <td align="center">
+ <img width="1710" height="796" alt="image" src="https://github.com/user-attachments/assets/aaaa8121-ee74-4935-8c0e-18bb871d7e9e" />
+   </td>
+  </tr>
+ </table>
+
+ <table align="center">
+  <tr>
+   <td align="center">
+    <img width="1558" height="769" alt="image" src="https://github.com/user-attachments/assets/daf8646c-285e-4649-8d37-d51b951055f0" />
+   </td>
+   <td align="center">
+    <img width="1603" height="821" alt="image" src="https://github.com/user-attachments/assets/c8429a3e-9c80-43d5-8096-fc4b6b763e58" />
+   </td>
+  </tr>
+  <tr>
+   <td align="center">
+    <img width="1450" height="831" alt="image" src="https://github.com/user-attachments/assets/f18fa175-b3d7-47a7-b949-2260f34d7951" />
+   </td>
+   <td align="center">
+    <img width="1470" height="832" alt="image" src="https://github.com/user-attachments/assets/6138ec1e-6792-489c-baae-60c84caad254" />
+   </td>
+  </tr>
+ </table>
+This is also known as twin-tub process.
+
+4.	Formation of gate
+
+<img width="1914" height="1073" alt="image" src="https://github.com/user-attachments/assets/dcbb51dc-4e34-4e58-8bef-635bff5b2ac3" />  
+NA and Cox are important terms for gate formation, as they control Vt.
+
+ <table align="center">
+  <tr>
+   <td align="center">
+    <img width="1470" height="765" alt="image" src="https://github.com/user-attachments/assets/b2454135-0ec6-4109-9273-edb6bc4c347c" />
+   </td>
+   <td align="center">
+    <img width="1513" height="816" alt="image" src="https://github.com/user-attachments/assets/d550c7ed-c991-4b71-a73e-cfd7f13ee2c5" />
+   </td>
+  </tr>
+ </table>
+  <table align="center">
+  <tr>
+   <td align="center">
+    <img width="1430" height="740" alt="image" src="https://github.com/user-attachments/assets/2430b9a5-de77-4e85-aa89-05ca3e4c7d9e" />
+   </td>
+   <td align="center">
+    <img width="1332" height="820" alt="image" src="https://github.com/user-attachments/assets/15ddb2f9-4ca0-4193-9d14-8da01e6d5c1a" />
+   </td>
+  </tr>
+ </table>
+
+
+  <table align="center">
+  <tr>
+   <td align="center">
+    <img width="1568" height="711" alt="image" src="https://github.com/user-attachments/assets/96f36d16-147a-4303-ba5b-eaafc734f948" />
+   </td>
+   <td align="center">
+    <img width="1580" height="730" alt="image" src="https://github.com/user-attachments/assets/1a2263b0-a035-44d0-96fa-bda328f36242" />
+   </td>
+  </tr>
+ </table>
+
+
+  <table align="center">
+  <tr>
+   <td align="center">
+    <img width="1524" height="828" alt="image" src="https://github.com/user-attachments/assets/14cc5d2e-aa71-47fe-a643-ee65c2e49477" />
+   </td>
+   <td align="center">
+    <img width="1422" height="829" alt="image" src="https://github.com/user-attachments/assets/78f983cf-f01c-4616-8bb6-cdec79ff6c6f" />
+   </td>
+  </tr>
+ </table>
+
+
+   <table align="center">
+  <tr>
+   <td align="center">
+    <img width="1398" height="874" alt="image" src="https://github.com/user-attachments/assets/a8f64e43-f55d-4370-b4f7-801c4bae34af" />
+   </td>
+   <td align="center">
+    <img width="1338" height="710" alt="image" src="https://github.com/user-attachments/assets/22ff50c7-d01b-47f3-bed8-3fdbdc0d63ab" />
+   </td>
+  </tr>
+ </table>
+
+5.	Lightly doped drain (LDD) formation  
+The doping profile we need is P+, P-, N  and N+, N-, P2.  
+Reasons for this  
+i)	Hot electron effect – Electric field E=V/d. High energy carriers break Si-Si bonds 3.2eV barrier b/w Si conduction band SiO2 conduction bandand creates reliability issues .  
+ii)	Short channel effect – For short channels, drain field penetrates channel making it difficult for the gate voltage to control the current.  
+
+<p align="center">
+ <img width="1604" height="617" alt="image" src="https://github.com/user-attachments/assets/1a32ee52-51a6-4a22-972a-7e2e7aa56508" />
+</p>
+
+<table align="center">
+ <tr>
+  <td align="center">
+   <img width="1518" height="764" alt="image" src="https://github.com/user-attachments/assets/1349c10d-3fec-46fe-9546-e80a735a34a7" />   
+  </td>
+  <td align="center">
+   <img width="1372" height="818" alt="image" src="https://github.com/user-attachments/assets/19645484-8097-45fe-ab96-2d297cf1ec86" />
+  </td>
+ </tr>
+</table>
+
+<table align="center">
+ <tr>
+  <td align="center">
+   <img width="1335" height="817" alt="image" src="https://github.com/user-attachments/assets/4996a6cb-1004-4473-a21b-8672f342e932" />
+  </td>
+  <td align="center">
+   <img width="1366" height="788" alt="image" src="https://github.com/user-attachments/assets/9cdea071-5766-4926-9b85-f6a67e72d976" />
+  </td>
+ </tr>
+</table>
+
+<table align="center">
+ <tr>
+  <td align="center">
+   <img width="1324" height="832" alt="image" src="https://github.com/user-attachments/assets/eb49a806-4128-42c0-ae8b-a30538eebf0a" />
+  </td>
+  <td align="center">
+   <img width="1374" height="836" alt="image" src="https://github.com/user-attachments/assets/1e34f6e9-944f-42e9-8ccf-02284b6d76ec" />
+  </td>
+ </tr>
+</table>
+
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1598" height="767" alt="image" src="https://github.com/user-attachments/assets/9f8832c4-4377-49ac-8354-e2d8f07e71dd" />
+  </td>
+  <td align="center">
+   <img width="1574" height="734" alt="image" src="https://github.com/user-attachments/assets/5e2c874a-07ef-4b84-a44d-34225b5dc8e8" />
+  </td>
+ </tr>
+</table>
+
+6.	Source and drain formation
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1565" height="749" alt="image" src="https://github.com/user-attachments/assets/050a8d59-a2ec-4979-bbe5-106733d08514" />
+  </td>
+  <td align="center">
+   <img width="1490" height="761" alt="image" src="https://github.com/user-attachments/assets/02cf55b0-8381-40b8-87f7-b32e88ac14ce" />
+  </td>
+ </tr>
+</table>
+
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1468" height="832" alt="image" src="https://github.com/user-attachments/assets/de0da305-6648-4ac7-b44e-46bf9ff2176a" />
+  </td>
+  <td align="center">
+   <img width="1342" height="806" alt="image" src="https://github.com/user-attachments/assets/1cc95339-e8ea-430b-b6de-562d0cb60bc7" />
+  </td>
+ </tr>
+</table>
+
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1396" height="772" alt="image" src="https://github.com/user-attachments/assets/a37fb3f1-c96c-450d-abe7-f32bd973aff8" />
+  </td>
+  <td align="center">
+   <img width="1471" height="817" alt="image" src="https://github.com/user-attachments/assets/7ce13997-b1f5-4f8d-a496-4e13dc5bd5e8" />
+  </td>
+ </tr>
+</table>
+
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1337" height="841" alt="image" src="https://github.com/user-attachments/assets/5712debe-5e35-4ae2-a9d5-35b0d48d5e38" />
+  </td>
+  <td align="center">
+   <img width="1657" height="849" alt="image" src="https://github.com/user-attachments/assets/c568048a-a2c9-4650-8bf0-f4d0b510be40" />
+  </td>
+ </tr>
+</table>
+
+7.	Steps to form contacts and interconnects(local)
+
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1581" height="767" alt="image" src="https://github.com/user-attachments/assets/5fe66daf-a7ca-41cc-8e8a-986068f15c03" />
+  </td>
+  <td align="center">
+   <img width="1454" height="658" alt="image" src="https://github.com/user-attachments/assets/84cad78b-4370-42b6-ba72-a0b0f9f5b5b1" />
+  </td>
+ </tr>
+</table>
+
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1578" height="757" alt="image" src="https://github.com/user-attachments/assets/7897a2f3-21dd-4fdd-ab8d-714f5375c430" />
+  </td>
+  <td align="center">
+   <img width="1578" height="793" alt="image" src="https://github.com/user-attachments/assets/4b7c5646-d412-4b0a-ab87-5da9b0db0832" />
+  </td>
+ </tr>
+</table>
+
+
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1582" height="781" alt="image" src="https://github.com/user-attachments/assets/c64fd0b5-4a51-44d2-8456-63f86016aee6" />
+  </td>
+  <td align="center">
+   <img width="1418" height="880" alt="image" src="https://github.com/user-attachments/assets/9b2b88d1-bd99-42ec-b6c9-086fb6f65a4e" />
+  </td>
+ </tr>
+</table>
+
+
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1220" height="343" alt="image" src="https://github.com/user-attachments/assets/aadda8c1-c7d9-4d1d-93c8-96de2c285af6" />
+  </td>
+  <td align="center">
+   <img width="1499" height="763" alt="image" src="https://github.com/user-attachments/assets/122f877f-6bd6-47df-bc16-8fa60a07dd2a" />
+  </td>
+ </tr>
+</table>
+
+
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1358" height="778" alt="image" src="https://github.com/user-attachments/assets/ccd26193-f2b7-415d-9ad2-fe8fc912e90c" />
+  </td>
+  <td align="center">
+   <img width="1352" height="609" alt="image" src="https://github.com/user-attachments/assets/36f1aeb0-069e-4533-991c-3f70401d5a25" />
+
+  </td>
+ </tr>
+</table>
+
+8.	Higher level metal formation
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1606" height="839" alt="image" src="https://github.com/user-attachments/assets/bee57991-c722-48c2-a96e-c1aad8532703" />
+  </td>
+  <td align="center">
+   <img width="1646" height="794" alt="image" src="https://github.com/user-attachments/assets/0e2c5fb0-1363-433a-bc03-a2430ea311a8" />
+  </td>
+ </tr>
+</table>
+
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1683" height="984" alt="image" src="https://github.com/user-attachments/assets/4f163f49-f91d-448c-9084-e83ae99e32f4" />
+  </td>
+  <td align="center">
+   <img width="1300" height="809" alt="image" src="https://github.com/user-attachments/assets/c25073e1-c621-4051-a00e-6c19720fe4d7" />
+
+  </td>
+ </tr>
+</table>
+
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1378" height="766" alt="image" src="https://github.com/user-attachments/assets/93335145-9ffc-415a-a411-3755e59d24f9" />
+  </td>
+  <td align="center">
+   <img width="1580" height="775" alt="image" src="https://github.com/user-attachments/assets/5de80d44-8df7-4440-99e5-64c31c88ae80" />
+  </td>
+ </tr>
+ 
+</table>
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1552" height="789" alt="image" src="https://github.com/user-attachments/assets/6167d68a-b478-4444-addb-dd3d38bfc985" />
+  </td>
+  <td align="center">
+   <img width="1545" height="743" alt="image" src="https://github.com/user-attachments/assets/0722a960-a266-4a3d-b363-81849007cde3" />
+  </td>
+ </tr>
+</table>
+
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1755" height="995" alt="image" src="https://github.com/user-attachments/assets/21dc588d-2d44-48fe-a210-9b9ff0529360" />
+  </td>
+  <td align="center">
+   <img width="1577" height="799" alt="image" src="https://github.com/user-attachments/assets/7132f3d9-5e99-4b28-8dda-be9275414eaf" />
+  </td>
+ </tr>
+</table>
+
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1663" height="808" alt="image" src="https://github.com/user-attachments/assets/5c86dbda-d9ed-421c-b8e6-9756dcc6b957" />
+  </td>
+  <td align="center">
+   <img width="1599" height="819" alt="image" src="https://github.com/user-attachments/assets/4d9ce504-57df-4fb1-928c-dfaa574919c9" />
+  </td>
+ </tr>
+</table>
+
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1563" height="837" alt="image" src="https://github.com/user-attachments/assets/25316b8f-99e7-40b1-a6a1-5ad80defb784" />
+  </td>
+  <td align="center">
+   <img width="1579" height="818" alt="image" src="https://github.com/user-attachments/assets/679d8bad-a73d-46b3-9084-4b6766d5ead4" />
+  </td>
+ </tr>
+</table>
+
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1898" height="1018" alt="image" src="https://github.com/user-attachments/assets/18022ae0-2ee9-4e5f-b9c6-57b27a6633da" />
+  </td>
+  <td align="center">
+   <img width="1898" height="997" alt="image" src="https://github.com/user-attachments/assets/a2b3a4e2-3ab8-44a4-b0df-aa974d92babf" />
+  </td>
+ </tr>
+</table>
+
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1873" height="1001" alt="image" src="https://github.com/user-attachments/assets/7786d748-f4b6-45e4-9d5e-d2d43b91bd65" />
+  </td>
+  <td align="center">
+   <img width="1473" height="1006" alt="image" src="https://github.com/user-attachments/assets/61172dd6-d4db-455e-9611-549da81ad5a4" />
+  </td>
+ </tr>
+</table>
+
+**Lab introduction to Sky130 basic layers layout and LEF using inverter**  
+
+Open the CMOS inverter layout using magic. The PMOS is at the top and NMOS at the bottom. Vertical red line is the Polysilicon. Source of the PMOS is connected to Vdd, Source of NMOS is connected to Gnd. The Drain of PMOS and NMOS are connected to output, Gate of both the transistors are connected to the input. To find out the name of any layer hover the mouse pointer over the layer in the layout pallete at the right and the name can be seen at the top right coner.  
+
+The first layer in Sky130 is local interconnect layer(locali). Metal 1 is purple color, Metal 2 is light pink. Nwell is solid dashed line. Green is n-diffusion. Brown/yelow is p diffusion.  
+
+<p align="center">
+ <img width="1920" height="937" alt="vsd19_inv" src="https://github.com/user-attachments/assets/1d853b89-ef3c-4db5-bc94-ef75f0802993" />
+</p>
+
+When a poly crosses an n-diffusion, it's an NMOS transistor. When a poly crosses p-diffusion, it's a PMOS. To verify put the mouse pointer over the region and press S to select the region and type what in tkcon window it returns a response as shown.  
+
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1920" height="937" alt="vsd20_nmos" src="https://github.com/user-attachments/assets/24715e1b-9075-4d4e-bbb0-ecdd60922a6d" />   
+  </td>
+  <td align="center">
+   <img width="1920" height="937" alt="vsd21_pmos" src="https://github.com/user-attachments/assets/fd8c65c9-1e38-46ad-a641-30afe4f2119e" />
+  </td>
+ </tr>
+</table>
+
+To verify that the drain of both transistors are connected to the output Y put the mouse pointer over the contact Y and Press S twice or thrice to select it's connectivity as shown.  
+
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1920" height="937" alt="vsd22_op1" src="https://github.com/user-attachments/assets/805ed710-24fd-41c9-99ee-3f91e6604abe" />
+  </td>
+  <td align="center">
+   <img width="1920" height="937" alt="vsd22_op2" src="https://github.com/user-attachments/assets/bf032d23-2b3a-4cf3-ab82-bf5723aa1c55" />
+  </td>
+ </tr>
+  <tr>
+  <td align="center">   
+   <img width="1920" height="937" alt="vsd22_op3" src="https://github.com/user-attachments/assets/3cc79fc4-0b93-45d9-a416-250de1cb677c" />
+  </td>
+  <td align="center">
+   
+  </td>
+ </tr>
+</table>
+
+Similarly to verify the connectivity of Source of PMOS and NMOS you can press S placing the pointer over the contact.
+
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1920" height="937" alt="vsd23_pmos_src1" src="https://github.com/user-attachments/assets/2d304428-5a18-4906-a9fc-527cdfcf5a84" />
+  </td>
+  <td align="center">
+   <img width="1920" height="937" alt="vsd23_pmos_src2" src="https://github.com/user-attachments/assets/f11f8c81-395e-4bac-b17f-d4b91d982900" />
+  </td>
+ </tr>
+  <tr>
+  <td align="center">   
+   <img width="1920" height="937" alt="vsd23_pmos_src3" src="https://github.com/user-attachments/assets/9e010fbf-29dd-437b-a1e1-aa433cc64c69" />
+  </td>
+  <td align="center">
+   <img width="1920" height="937" alt="vsd23_pmos_src4" src="https://github.com/user-attachments/assets/7e6f8a01-841d-4e8b-bc61-5e9aa9a45225" />
+  </td>
+ </tr>
+</table>
+
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1920" height="937" alt="vsd24_nmos_src1" src="https://github.com/user-attachments/assets/53505337-40d2-4efa-86c3-21ed10501888" />
+  </td>
+  <td align="center">
+   <img width="1920" height="937" alt="vsd24_nmos_src2" src="https://github.com/user-attachments/assets/f5994694-3198-4fad-9763-57e78412e626" />
+  </td>
+ </tr>
+</table>
+
+For more info on how to do the CMOS inverter design from scratch refer to [vsdstdcelldesign](https://github.com/nickson-jose/vsdstdcelldesign)
+<p align="center">
+ <img width="869" height="641" alt="image" src="https://github.com/user-attachments/assets/bc01d4fe-66f0-42eb-9844-27beadd4076f" /> 
+</p>
+
+LEF (library exchange format)-it’s an abstract view of the layout. When IP vendors want to protect their IP’s visibility, they use LEF to protect (also called frame view)
+
+Magic is an interactive DRC tool, as and when the fix is done the violoation number gets updated.
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1595" height="964" alt="image" src="https://github.com/user-attachments/assets/47333530-fa25-4f81-b808-987f27a20b09" />
+  </td>
+  <td align="center">
+   <img width="450" height="384" alt="image" src="https://github.com/user-attachments/assets/1db90bea-c9f3-47db-83b0-24edacd96e45" />
+  </td>
+ </tr>
+  <tr>
+  <td align="center">   
+   <img width="1599" height="972" alt="image" src="https://github.com/user-attachments/assets/e45b3d1e-39dd-418c-aee8-922709af9cc7" />
+  </td>
+  <td align="center">
+   <img width="1008" height="349" alt="image" src="https://github.com/user-attachments/assets/586084b4-1491-41cf-a225-fda02f2d5c2c" />
+  </td>
+ </tr>
+</table>
+
+To know the logical behaviour we extract the spice and run a simulation using ngspice.
+
+***extract all   
+ext2spice cthresh 0 rthresh 0   
+ext2spice***   
+
+<table align="center">
+ <tr>
+  <td align="center">   
+   <img width="1920" height="937" alt="vsd25_spice_ext1" src="https://github.com/user-attachments/assets/184cedba-9f35-4229-8883-665415f94c50" />
+  </td>
+  <td align="center">
+   <img width="1920" height="937" alt="vsd25_spice_ext2" src="https://github.com/user-attachments/assets/5561cfe4-f8b1-4a9d-b17b-7c13b6e77e49" />
+  </td>
+ </tr>
+  <tr>
+  <td align="center">   
+   <img width="1920" height="937" alt="vsd25_spice_ext3" src="https://github.com/user-attachments/assets/28c577f5-b71f-48bb-ad1f-67dee94392b4" />
+  </td>
+  <td align="center">
+   <img width="1920" height="937" alt="vsd25_spice_ext4" src="https://github.com/user-attachments/assets/dd60c713-7ab1-49c2-aa06-2f7d5a97ba64" />
+  </td>
+ </tr>
+</table>
+
+Edit the spice file for simulation.  
+<p align="center">
+ <img width="1920" height="937" alt="vsd26_inv_spice" src="https://github.com/user-attachments/assets/8f00d0c3-7883-4c99-9c8f-36dad7029263" />
+</p>
+<p align="center">
+ <img width="1920" height="937" alt="vsd26_inv_spice3" src="https://github.com/user-attachments/assets/7deebbc7-a9e0-4104-ad5b-d79e71e7b44d" />
+</p>
+
+Characterize the inverter - Find 4 values:  
+1. Rise transition - time taken for the output to go from 20% of max output to 80% of max output voltage.  
+
+   ```math
+       80\%\ of\ Vdd\ =\ 0.8 * 3.3 = 2.64V.   
+       20\%\ of\ Vdd\ = 0.2 * 3.3 = 0.66V.  
+   ```
+   
+   <p align="center">
+    <img width="416" height="172" alt="vsd27_rise" src="https://github.com/user-attachments/assets/12d2ae0a-9551-461e-aa63-804485199b2a" />
+   </p>  
+   
+   ```math
+   Rise\ transition = 2.24594 -2.18186  
+                    = 0.06408 e^-9s = 64.08ps
+   ```
+   
+2. Fall transition - time taken for the output to go from 80% of max output to 20% of max output voltage.
+   <p align="center">
+    <img width="411" height="102" alt="vsd27_fall" src="https://github.com/user-attachments/assets/264b7a6f-2e5e-4250-930f-6dec10c04308" />
+   </p>  
+   
+   ```math
+   Fall\ transition = 4.09512 - 4.0527  
+                    = 0.04242 e^-9s = 42.42ps
+   ```  
+   
+3. Rise cell delay - time between the input rising to 50% and output falling to 50%.
+   <p align="center">
+    <img width="365" height="82" alt="vsd27_rise_pro" src="https://github.com/user-attachments/assets/460dc45c-3a45-4e45-afa2-42cc865e8cf5" />
+   </p>  
+   
+   ```math
+   Rise\ cell\ delay = 2.21098 - 2.14995  
+                     = 0.06103 e^-9s = 61.03ps
+   ```  
+   
+4. Fall cell delay - time between the input falling to 50% and output rising to 50%.
+   <p align="center">
+    <img width="373" height="78" alt="vsd27_fall_prop" src="https://github.com/user-attachments/assets/41ea6fec-0f11-4140-ac6f-a3c6d16a7f92" />
+   </p>  
+   
+   ```math
+   Fall\ cell\ delay = 4.07768 - 4.05    
+                     = 0.02768 e^-9s = 27.68ps
+   ```  
+   
+   <p align="center">
+    <img width="1920" height="937" alt="vsd27_teminal" src="https://github.com/user-attachments/assets/9a8e9e3c-2ca1-48da-84c4-89352856b25b" />    
+   </p>
+   
+   <p align="center">
+    <img width="1920" height="937" alt="vsd27_zoom" src="https://github.com/user-attachments/assets/3a6e63b2-efb6-40b9-bc48-9b282cf4b59f" />
+   </p>
+
+   
 
 </details>
+
 
 ## Day 4 - Pre-Layout timing analysis and importance and good clock tree
 <details>
